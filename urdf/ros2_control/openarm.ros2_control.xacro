@@ -5,7 +5,7 @@
          params="arm_type
              control_gains
              can_interface
-             use_fake_hardware:=^|false
+             hardware_type:=^|real
              fake_sensor_commands:=^|false
              hand:=^|false
              gazebo_effort:=^|false
@@ -17,12 +17,12 @@
         <hardware>
           <param name="arm_type">${arm_type}</param>
           <param name="prefix">${arm_prefix}</param>
-          <xacro:if value="${use_fake_hardware}">
+          <xacro:if value="${hardware_type == 'mock'}">
             <plugin>mock_components/GenericSystem</plugin>
             <param name="fake_sensor_commands">${fake_sensor_commands}</param>
             <param name="state_following_offset">0.0</param>
           </xacro:if>
-          <xacro:if value="${use_fake_hardware == 0}">
+          <xacro:if value="${hardware_type == 'real'}">
             <plugin>openarm_hardware/OpenArm_${arm_type}HW</plugin>
             <param name="can_interface">${can_interface}</param>
             <param name="arm_prefix">${arm_prefix}</param>
