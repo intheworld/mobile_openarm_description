@@ -115,7 +115,7 @@ def generate_launch_description():
     hardware_type_arg = DeclareLaunchArgument(
         "hardware_type",
         default_value="",
-        description="Hardware backend to use, defaults to use_fake_hardware."
+        description="Hardware backend to use (real/mock/mujoco)."
     )
 
     use_fake_hardware_arg = DeclareLaunchArgument(
