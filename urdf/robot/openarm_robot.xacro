@@ -20,7 +20,7 @@
             ee_type:=''
             ros2_control:=false
             can_interface:=''
-            hardware_type:='real'
+            hardware_type:=''
             use_fake_hardware:=false
             fake_sensor_commands:=false
             no_prefix:='false'
