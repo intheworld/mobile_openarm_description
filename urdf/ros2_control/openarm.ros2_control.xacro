@@ -11,12 +11,17 @@
              gazebo_effort:=^|false
              arm_prefix:=''
              bimanual:=false
-             can_fd:=^|true">
+             can_fd:=^|true
+             websocket_port:=1337">
 
     <ros2_control name="openarm_hardware_interface" type="system">
         <hardware>
           <param name="arm_type">${arm_type}</param>
           <param name="prefix">${arm_prefix}</param>
+          <xacro:if value="${hardware_type == 'mujoco'}">
+            <plugin>openarm_mujoco_hardware/MujocoHardware</plugin>
+            <param name="websocket_port">${websocket_port}</param>
+          </xacro:if>
           <xacro:if value="${hardware_type == 'mock'}">
             <plugin>mock_components/GenericSystem</plugin>
             <param name="fake_sensor_commands">${fake_sensor_commands}</param>
