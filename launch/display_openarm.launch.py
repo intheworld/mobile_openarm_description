@@ -133,7 +133,8 @@ def generate_launch_description():
 
     robot_state_publisher_loader = OpaqueFunction(
         function=robot_state_publisher_spawner,
-        args=[arm_type, ee_type, bimanual, ros2_control, hardware_type, use_fake_hardware]
+        args=[arm_type, ee_type, bimanual, ros2_control,
+              hardware_type, use_fake_hardware]
     )
 
     rviz_loader = OpaqueFunction(
