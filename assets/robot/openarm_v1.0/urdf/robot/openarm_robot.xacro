@@ -42,6 +42,7 @@ limitations under the License.
             body_prefix:=''
             arm_connected_to='base'
             body_connected_to='world'
+            body_create_connected_link:=true
             bimanual:=false
             right_arm_base_xyz='0 0 0'
             left_arm_base_xyz='0 0 0'
@@ -82,7 +83,8 @@ limitations under the License.
         rpy="${rpy}"
         inertials="${body_inertials}"
         kinematics="${body_kinematics}"
-        kinematics_link="${body_kinematics_link}" />
+        kinematics_link="${body_kinematics_link}"
+        create_connected_link="${body_create_connected_link}" />
 
         <!-- left arm -->
         <xacro:openarm_arm

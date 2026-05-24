@@ -25,6 +25,7 @@ limitations under the License.
               connected_to:='world'
               xyz:='0 0 0'
               rpy:='0 0 0'
+              create_connected_link:=true
               inertials
               kinematics
               kinematics_link">
@@ -33,7 +34,9 @@ limitations under the License.
     <xacro:property name="prefix" value="${'' if no_prefix else 'openarm_' + 'body_'}" />
 
     <xacro:unless value="${not connected_to}">
+    <xacro:if value="${create_connected_link}">
     <link name="${connected_to}" />
+    </xacro:if>
     <joint name="${prefix}${connected_to}_joint" type="fixed">
     <parent link="${connected_to}" />
     <child link="${prefix}link0" />

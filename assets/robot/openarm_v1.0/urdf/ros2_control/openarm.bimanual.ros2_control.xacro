@@ -57,10 +57,6 @@ limitations under the License.
             <param name="kd5">${control_gains['joint5']['kd']}</param>
             <param name="kd6">${control_gains['joint6']['kd']}</param>
             <param name="kd7">${control_gains['joint7']['kd']}</param>
-            <xacro:if value="${hand}">
-              <param name="kp_hand">${control_gains['hand']['kp']}</param>
-              <param name="kd_hand">${control_gains['hand']['kd']}</param>
-            </xacro:if>
           </xacro:unless>
         </hardware>
 
@@ -126,10 +122,6 @@ limitations under the License.
             <param name="kd5">${control_gains['joint5']['kd']}</param>
             <param name="kd6">${control_gains['joint6']['kd']}</param>
             <param name="kd7">${control_gains['joint7']['kd']}</param>
-            <xacro:if value="${hand}">
-              <param name="kp_hand">${control_gains['hand']['kp']}</param>
-              <param name="kd_hand">${control_gains['hand']['kd']}</param>
-            </xacro:if>
           </xacro:unless>
         </hardware>
 

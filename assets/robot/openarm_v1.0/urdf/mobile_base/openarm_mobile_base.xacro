@@ -1,0 +1,191 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="mobile_base_inertial_box" params="mass x y z">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+        ixx="${mass * (y * y + z * z) / 12.0}"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="${mass * (x * x + z * z) / 12.0}"
+        iyz="0.0"
+        izz="${mass * (x * x + y * y) / 12.0}"/>
+    </inertial>
+  </xacro:macro>
+
+  <xacro:macro name="mobile_base_inertial_cylinder" params="mass radius length">
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="${mass}"/>
+      <inertia
+        ixx="${mass * (3.0 * radius * radius + length * length) / 12.0}"
+        ixy="0.0"
+        ixz="0.0"
+        iyy="${mass * (3.0 * radius * radius + length * length) / 12.0}"
+        iyz="0.0"
+        izz="${mass * radius * radius / 2.0}"/>
+    </inertial>
+  </xacro:macro>
+
+  <xacro:macro name="mobile_base_box_link" params="name size color mass">
+    <xacro:property name="dims" value="${size.split()}"/>
+    <link name="${name}">
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${size}"/>
+        </geometry>
+        <material name="${name}_material">
+          <color rgba="${color}"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0"/>
+        <geometry>
+          <box size="${size}"/>
+        </geometry>
+      </collision>
+      <xacro:mobile_base_inertial_box
+        mass="${mass}"
+        x="${float(dims[0])}"
+        y="${float(dims[1])}"
+        z="${float(dims[2])}"/>
+    </link>
+  </xacro:macro>
+
+  <xacro:macro name="mobile_base_cylinder_link" params="name radius length color mass origin_xyz:='0 0 0'">
+    <link name="${name}">
+      <visual>
+        <origin xyz="${origin_xyz}" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="${radius}" length="${length}"/>
+        </geometry>
+        <material name="${name}_material">
+          <color rgba="${color}"/>
+        </material>
+      </visual>
+      <collision>
+        <origin xyz="${origin_xyz}" rpy="0 0 0"/>
+        <geometry>
+          <cylinder radius="${radius}" length="${length}"/>
+        </geometry>
+      </collision>
+      <xacro:mobile_base_inertial_cylinder mass="${mass}" radius="${radius}" length="${length}"/>
+    </link>
+  </xacro:macro>
+
+  <xacro:macro name="mobile_base_fixed_joint" params="name parent child xyz rpy:='0 0 0'">
+    <joint name="${name}" type="fixed">
+      <parent link="${parent}"/>
+      <child link="${child}"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="mobile_base_continuous_joint" params="name parent child xyz rpy:='0 0 0'">
+    <joint name="${name}" type="continuous">
+      <parent link="${parent}"/>
+      <child link="${child}"/>
+      <origin xyz="${xyz}" rpy="${rpy}"/>
+      <axis xyz="0 0 1"/>
+    </joint>
+  </xacro:macro>
+
+  <xacro:macro name="openarm_mobile_base"
+    params="parent:='world'
+            xyz:='0 0 0'
+            rpy:='0 0 0'
+            base_mount_z:=0.22
+            lift_lower:=0.0
+            lift_upper:=0.30">
+
+    <xacro:property name="base_height" value="${0.16}"/>
+    <xacro:property name="top_plate_height" value="${0.05}"/>
+    <xacro:property name="lower_column_length" value="${max(base_mount_z - base_height / 2.0 - top_plate_height / 2.0, 0.05)}"/>
+    <xacro:property name="lower_column_center_z" value="${base_height / 2.0 + lower_column_length / 2.0}"/>
+    <xacro:property name="upper_column_length" value="${0.24}"/>
+    <xacro:property name="upper_column_center_z" value="${-(top_plate_height / 2.0 + upper_column_length / 2.0)}"/>
+
+    <link name="${parent}"/>
+
+    <xacro:mobile_base_box_link
+      name="mobile_base_link"
+      size="0.72 0.52 0.16"
+      color="0.12 0.14 0.16 1.0"
+      mass="18.0"/>
+    <xacro:mobile_base_fixed_joint
+      name="${parent}_to_mobile_base_joint"
+      parent="${parent}"
+      child="mobile_base_link"
+      xyz="${xyz}"
+      rpy="${rpy}"/>
+
+    <xacro:mobile_base_cylinder_link
+      name="mobile_base_lower_support_column_link"
+      radius="0.085"
+      length="${lower_column_length}"
+      color="0.22 0.24 0.26 1.0"
+      mass="2.2"/>
+    <xacro:mobile_base_fixed_joint
+      name="mobile_base_lower_support_column_joint"
+      parent="mobile_base_link"
+      child="mobile_base_lower_support_column_link"
+      xyz="0 0 ${lower_column_center_z}"/>
+
+    <xacro:mobile_base_box_link
+      name="mobile_base_mount_link"
+      size="0.30 0.22 0.05"
+      color="0.32 0.34 0.36 1.0"
+      mass="2.6"/>
+    <joint name="mobile_base_lift_joint" type="prismatic">
+      <parent link="mobile_base_link"/>
+      <child link="mobile_base_mount_link"/>
+      <origin xyz="0 0 ${base_mount_z}" rpy="0 0 0"/>
+      <axis xyz="0 0 1"/>
+      <limit lower="${lift_lower}" upper="${lift_upper}" effort="1000.0" velocity="0.05"/>
+    </joint>
+
+    <xacro:mobile_base_cylinder_link
+      name="mobile_base_upper_support_column_link"
+      radius="0.055"
+      length="${upper_column_length}"
+      color="0.38 0.40 0.42 1.0"
+      mass="1.4"
+      origin_xyz="0 0 ${upper_column_center_z}"/>
+    <xacro:mobile_base_fixed_joint
+      name="mobile_base_upper_support_column_joint"
+      parent="mobile_base_mount_link"
+      child="mobile_base_upper_support_column_link"
+      xyz="0 0 0"/>
+
+    <link name="base_link"/>
+    <xacro:mobile_base_fixed_joint
+      name="mobile_base_mount_to_base_link_joint"
+      parent="mobile_base_mount_link"
+      child="base_link"
+      xyz="0 0 0"/>
+
+    <xacro:mobile_base_cylinder_link name="mobile_base_front_left_wheel_link" radius="0.075" length="0.055" color="0.02 0.02 0.02 1.0" mass="0.8"/>
+    <xacro:mobile_base_continuous_joint name="mobile_base_front_left_wheel_joint" parent="mobile_base_link" child="mobile_base_front_left_wheel_link" xyz="0.26 0.22 -0.04" rpy="1.5708 0 0"/>
+    <xacro:mobile_base_cylinder_link name="mobile_base_front_left_roller_link" radius="0.018" length="0.08" color="0.78 0.78 0.72 1.0" mass="0.15"/>
+    <xacro:mobile_base_fixed_joint name="mobile_base_front_left_roller_joint" parent="mobile_base_front_left_wheel_link" child="mobile_base_front_left_roller_link" xyz="0 0 0" rpy="0.7854 0 0"/>
+
+    <xacro:mobile_base_cylinder_link name="mobile_base_front_right_wheel_link" radius="0.075" length="0.055" color="0.02 0.02 0.02 1.0" mass="0.8"/>
+    <xacro:mobile_base_continuous_joint name="mobile_base_front_right_wheel_joint" parent="mobile_base_link" child="mobile_base_front_right_wheel_link" xyz="0.26 -0.22 -0.04" rpy="1.5708 0 0"/>
+    <xacro:mobile_base_cylinder_link name="mobile_base_front_right_roller_link" radius="0.018" length="0.08" color="0.78 0.78 0.72 1.0" mass="0.15"/>
+    <xacro:mobile_base_fixed_joint name="mobile_base_front_right_roller_joint" parent="mobile_base_front_right_wheel_link" child="mobile_base_front_right_roller_link" xyz="0 0 0" rpy="-0.7854 0 0"/>
+
+    <xacro:mobile_base_cylinder_link name="mobile_base_rear_left_wheel_link" radius="0.075" length="0.055" color="0.02 0.02 0.02 1.0" mass="0.8"/>
+    <xacro:mobile_base_continuous_joint name="mobile_base_rear_left_wheel_joint" parent="mobile_base_link" child="mobile_base_rear_left_wheel_link" xyz="-0.26 0.22 -0.04" rpy="1.5708 0 0"/>
+    <xacro:mobile_base_cylinder_link name="mobile_base_rear_left_roller_link" radius="0.018" length="0.08" color="0.78 0.78 0.72 1.0" mass="0.15"/>
+    <xacro:mobile_base_fixed_joint name="mobile_base_rear_left_roller_joint" parent="mobile_base_rear_left_wheel_link" child="mobile_base_rear_left_roller_link" xyz="0 0 0" rpy="-0.7854 0 0"/>
+
+    <xacro:mobile_base_cylinder_link name="mobile_base_rear_right_wheel_link" radius="0.075" length="0.055" color="0.02 0.02 0.02 1.0" mass="0.8"/>
+    <xacro:mobile_base_continuous_joint name="mobile_base_rear_right_wheel_joint" parent="mobile_base_link" child="mobile_base_rear_right_wheel_link" xyz="-0.26 -0.22 -0.04" rpy="1.5708 0 0"/>
+    <xacro:mobile_base_cylinder_link name="mobile_base_rear_right_roller_link" radius="0.018" length="0.08" color="0.78 0.78 0.72 1.0" mass="0.15"/>
+    <xacro:mobile_base_fixed_joint name="mobile_base_rear_right_roller_joint" parent="mobile_base_rear_right_wheel_link" child="mobile_base_rear_right_roller_link" xyz="0 0 0" rpy="0.7854 0 0"/>
+  </xacro:macro>
+
+</robot>

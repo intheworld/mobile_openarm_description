@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="openarm_mobile_base_ros2_control" params="fake_sensor_commands:=true">
+    <ros2_control name="mobile_base_hardware" type="system">
+      <hardware>
+        <plugin>mock_components/GenericSystem</plugin>
+        <param name="fake_sensor_commands">${fake_sensor_commands}</param>
+        <param name="state_following_offset">0.0</param>
+      </hardware>
+
+      <joint name="mobile_base_lift_joint">
+        <command_interface name="position"/>
+        <state_interface name="position">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+        <state_interface name="velocity">
+          <param name="initial_value">0.0</param>
+        </state_interface>
+      </joint>
+
+      <xacro:macro name="mobile_base_wheel_control_joint" params="joint_name">
+        <joint name="${joint_name}">
+          <command_interface name="velocity"/>
+          <state_interface name="position">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+          <state_interface name="velocity">
+            <param name="initial_value">0.0</param>
+          </state_interface>
+        </joint>
+      </xacro:macro>
+
+      <xacro:mobile_base_wheel_control_joint joint_name="mobile_base_front_left_wheel_joint"/>
+      <xacro:mobile_base_wheel_control_joint joint_name="mobile_base_front_right_wheel_joint"/>
+      <xacro:mobile_base_wheel_control_joint joint_name="mobile_base_rear_left_wheel_joint"/>
+      <xacro:mobile_base_wheel_control_joint joint_name="mobile_base_rear_right_wheel_joint"/>
+    </ros2_control>
+  </xacro:macro>
+
+</robot>
